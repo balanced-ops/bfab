@@ -66,7 +66,7 @@ ctx = Context(
 
     WORKERS=[],
 
-    AWS_ENVIRONMENT_TAG='Environment',
+    AWS_ENVIRONMENT_TAG='ChefEnvironment',
 
     AWS_DISABLED_TAG='Disabled',
 
@@ -115,8 +115,14 @@ def hosts(env=None, lb=None, subenets=None):
     tags = {}
     if env:
         tags['tag:' + ctx.AWS_ENVIRONMENT_TAG] = env
-    populate_instances(tags, lb, subenets)
-    api.env.hosts = [i.id + '.' + ctx.DOMAIN for i in api.env.instances]
+    populate_instances(tags=tags, lb=lb, subenets=subenets)
+    # HACK: dns resolution does not seem to be working for all instances
+    #api.env.hosts = [i.id + '.' + ctx.DOMAIN for i in api.env.instances]
+    api.env.hosts = [
+        inst.interfaces[0].private_ip_address for inst in api.env.instances
+    ]
+    for instance in api.env.instances:
+        print instance, instance.tags
 
 
 @api.task
@@ -505,14 +511,14 @@ def populate_instances(
         if lb:
             return any(instance.id == i.id for i in lb.instances)
         return True
-
     if api.env.instances:
         return api.env.instances
     remote_filter = {
         'vpc-id': ctx.AWS_VPC_ID,
-        'instance.group-id': ctx.AWS_GROUP_ID,
         'instance-state-name': 'running',
     }
+    if ctx.AWS_GROUP_ID:
+        remote_filter['instance.group-id'] = ctx.AWS_GROUP_ID
     if tags:
         remote_filter.update(tags)
     cxn = boto.ec2.connect_to_region(api.env.region_name)
