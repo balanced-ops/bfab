@@ -27,3 +27,7 @@ Features
 1. In your fabric file `import bfab`
 1. Configure `bfab.ctx` as required
 1. `fab -f scripts/fabfile.py -l` to see available commands
+
+## Example
+
+`fab -f examples/fabfile.py -l`
