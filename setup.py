@@ -31,6 +31,8 @@ setup(
     package_dir={'bfab': 'bfab'},
     include_package_data=True,
     install_requires=[
+        'Fabric',
+        'boto',
     ],
     license="BSD",
     zip_safe=False,
