@@ -140,6 +140,7 @@ def code_sync(branch='release', commit='HEAD', clear_cached='t'):
         api.run('git fetch')
         api.run('git checkout ' + branch)
         if hash != 'HEAD':
+            swallow = api.run('git pull')
             result = api.run(
                 'git branch --contains {} | grep {} | wc -l'.format(
                     commit, branch,
